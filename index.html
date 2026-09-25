@@ -1,419 +1,1097 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<title>Spot the Conflict — Transaction Schedule Quiz</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#6D4AFF">
+    <meta name="description" content="FinGuard AI watches every payment and flags anything unusual, so suspicious transactions can be caught before they turn into losses.">
 
-:root{
-  --bg:#0B0F14;
-  --panel:#121922;
-  --panel-2:#0E141B;
-  --border:#1E2A35;
-  --t1:#45D6C4;
-  --t1-dim:#1E3D3A;
-  --t2:#F0A857;
-  --t2-dim:#3D2F1B;
-  --sys:#7C8B99;
-  --danger:#FF6B6B;
-  --danger-dim:#3A1D1F;
-  --good:#7ED9A0;
-  --good-dim:#1B3A26;
-  --text:#E8EEF3;
-  --muted:#8494A3;
-  --mono:'IBM Plex Mono', monospace;
-  --display:'Space Grotesk', sans-serif;
-  --body:'Inter', sans-serif;
-}
-*{box-sizing:border-box;}
-html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:var(--body);}
-.app{max-width:920px;margin:0 auto;padding:28px 20px 48px;}
+    <title>FinGuard AI | Intelligent Financial Security</title>
 
-.hdr{display:flex;flex-direction:column;gap:10px;margin-bottom:20px;}
-.hdr h1{font-family:var(--display);font-size:25px;font-weight:700;margin:0;letter-spacing:-0.01em;}
-.hdr .sub{color:var(--muted);font-size:13.5px;margin:0;max-width:620px;line-height:1.5;}
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 
-.hud{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
-.qcount{font-family:var(--mono);font-size:12px;color:var(--muted);}
-.score{font-family:var(--mono);font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;}
-.score b{color:var(--good);font-size:14px;}
-.qdots{display:flex;gap:5px;}
-.qdot{width:8px;height:8px;border-radius:50%;background:var(--border);}
-.qdot.done-correct{background:var(--good);}
-.qdot.done-wrong{background:var(--danger);}
-.qdot.active{outline:2px solid var(--text);outline-offset:2px;}
+    <!-- Lets CSS know JavaScript is available (used for scroll reveals) -->
+    <script>document.documentElement.classList.add('js');</script>
 
-.timeline-panel{
-  background:var(--panel);border:1px solid var(--border);border-radius:12px;
-  padding:16px;margin-bottom:16px;
-}
-.timeline-title{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;display:flex;justify-content:space-between;}
-.timeline{display:flex;flex-direction:column;gap:9px;}
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
+                        display: ['"Bricolage Grotesque"', '"DM Sans"', 'system-ui', 'sans-serif']
+                    },
+                    colors: {
+                        ink: '#1E1B4B',
+                        iris: { DEFAULT: '#6D4AFF', 50: '#F1EEFF', 100: '#E4DEFF', 700: '#4B2FE0' },
+                        mint: { DEFAULT: '#12C79A', 50: '#E6FBF5', 100: '#C8F5E8', 700: '#0B8F6E' },
+                        coral: { DEFAULT: '#FF5D73', 50: '#FFEDEF', 100: '#FFD9DE', 700: '#C9243F' },
+                        sun: { DEFAULT: '#FFB938', 50: '#FFF5DD', 100: '#FFE9B8', 700: '#8F5A00' },
+                        azure: { DEFAULT: '#2FA8F5', 50: '#E8F5FF', 100: '#CBE9FF', 700: '#1266A3' }
+                    }
+                }
+            }
+        }
+    </script>
 
-.row{display:grid;grid-template-columns:1fr 28px 1fr;gap:10px;}
-.slot{border-radius:9px;padding:9px 12px;font-size:13px;line-height:1.4;border:1px solid transparent;visibility:hidden;}
-.slot.filled{visibility:visible;}
-.slot.t1{background:var(--t1-dim);border-color:#2b5c56;}
-.slot.t2{background:var(--t2-dim);border-color:#6b4c26;}
-.slot .op{font-family:var(--mono);font-weight:600;font-size:12.5px;}
-.slot.t1 .op{color:var(--t1);}
-.slot.t2 .op{color:var(--t2);}
-.slot .desc{color:var(--text);margin-top:3px;font-size:12.5px;}
-.slot .sql{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:6px;white-space:pre-wrap;border-top:1px dashed rgba(255,255,255,0.08);padding-top:6px;}
-.row.flag .slot.filled{box-shadow:0 0 0 2px var(--danger);}
+    <style>
+        /* ------------------------------------------------------------
+           Base
+        ------------------------------------------------------------ */
+        html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
+        body { font-family: 'DM Sans', system-ui, sans-serif; color: #1E1B4B; background: #fff; }
+        :focus-visible { outline: 3px solid #6D4AFF; outline-offset: 3px; border-radius: 8px; }
 
-.mid{display:flex;align-items:center;justify-content:center;}
-.mid .dot{width:9px;height:9px;border-radius:50%;background:var(--sys);}
-.sys-note{grid-column:1/-1;text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--sys);background:var(--panel-2);border:1px dashed var(--border);border-radius:7px;padding:6px 10px;}
+        .grad-text {
+            background: linear-gradient(90deg, #6D4AFF 0%, #C04BE8 50%, #FF5D73 100%);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
 
-.prompt{font-size:14px;color:var(--text);margin:4px 0 14px;font-weight:500;}
+        /* ------------------------------------------------------------
+           Buttons
+        ------------------------------------------------------------ */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+            font-weight: 700; border-radius: 9999px; padding: .85rem 1.6rem; cursor: pointer;
+            transition: transform .2s ease, box-shadow .2s ease, background .2s ease, border-color .2s ease;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #6D4AFF, #8B5CF6 55%, #E14FC0);
+            color: #fff; box-shadow: 0 12px 26px -10px rgba(109, 74, 255, .75);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 18px 32px -10px rgba(109, 74, 255, .85); }
+        .btn-primary:disabled { opacity: .85; cursor: progress; transform: none; }
+        .btn-ghost { background: #fff; color: #1E1B4B; border: 2px solid rgba(30, 27, 75, .12); }
+        .btn-ghost:hover { border-color: #6D4AFF; color: #4B2FE0; transform: translateY(-2px); }
+        .btn-ink { background: #1E1B4B; color: #fff; box-shadow: 0 14px 30px -12px rgba(30, 27, 75, .7); }
+        .btn-ink:hover { transform: translateY(-2px); background: #2b2770; }
 
-.options{display:flex;flex-direction:column;gap:9px;margin-bottom:14px;}
-.opt{
-  text-align:left;font-family:var(--body);font-size:14px;font-weight:500;
-  padding:13px 16px;border-radius:10px;border:1px solid var(--border);
-  background:var(--panel);color:var(--text);cursor:pointer;transition:all .15s ease;
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-}
-.opt:hover:not(.locked){border-color:#3a4d5c;background:#182530;}
-.opt .name{display:flex;flex-direction:column;gap:2px;}
-.opt .tag{font-family:var(--mono);font-size:10.5px;color:var(--muted);}
-.opt .mark{font-size:16px;}
-.opt.selected{outline:2px solid var(--text);outline-offset:-2px;}
-.opt.correct{background:var(--good-dim);border-color:#2e6b45;}
-.opt.correct .tag{color:var(--good);}
-.opt.wrong{background:var(--danger-dim);border-color:#5a2a2a;}
-.opt.wrong .tag{color:var(--danger);}
-.opt.locked{cursor:default;}
-.opt.dim{opacity:.5;}
+        .spin {
+            display: none; width: 16px; height: 16px; border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, .45); border-top-color: #fff; animation: spin .7s linear infinite;
+        }
+        .is-loading .spin { display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
-.result-banner{
-  font-family:var(--body);font-size:14px;font-weight:600;padding:12px 14px;border-radius:9px;
-  margin-bottom:12px;display:none;
-}
-.result-banner.show{display:block;}
-.result-banner.correct{background:var(--good-dim);color:var(--good);border:1px solid #2e6b45;}
-.result-banner.wrong{background:var(--danger-dim);color:var(--danger);border:1px solid #5a2a2a;}
+        /* ------------------------------------------------------------
+           Header
+        ------------------------------------------------------------ */
+        .logo-tile {
+            width: 44px; height: 44px; padding: 6px; border-radius: 14px; background: #1E1B4B;
+            display: grid; place-items: center; flex-shrink: 0; box-shadow: 0 8px 18px -8px rgba(30, 27, 75, .6);
+        }
+        .nav-link { position: relative; padding: .25rem 0; transition: color .2s; }
+        .nav-link::after {
+            content: ""; position: absolute; left: 0; right: 0; bottom: -4px; height: 3px; border-radius: 3px;
+            background: linear-gradient(90deg, #6D4AFF, #FF5D73); transform: scaleX(0); transform-origin: left;
+            transition: transform .25s ease;
+        }
+        .nav-link:hover { color: #6D4AFF; }
+        .nav-link:hover::after { transform: scaleX(1); }
 
-.reveal{display:none;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;}
-.reveal.show{display:block;}
-.reveal .card-title{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;}
-.reveal .name-line{font-family:var(--display);font-size:18px;font-weight:700;margin-bottom:8px;}
-.reveal .explain{font-size:13.5px;line-height:1.6;color:var(--text);}
-.reveal .explain b{color:var(--danger);}
+        /* ------------------------------------------------------------
+           Hero
+        ------------------------------------------------------------ */
+        .hero-bg { background: linear-gradient(180deg, #F3EFFF 0%, #FFF3EE 100%); }
+        .blob { position: absolute; border-radius: 9999px; filter: blur(70px); opacity: .55; animation: drift 14s ease-in-out infinite alternate; }
+        @keyframes drift { to { transform: translate(40px, -30px) scale(1.15); } }
 
-.controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
-.btn{font-family:var(--body);font-weight:500;font-size:13px;padding:9px 16px;border-radius:8px;border:1px solid var(--border);background:var(--panel);color:var(--text);cursor:pointer;transition:all .15s;}
-.btn:hover:not(:disabled){border-color:#3a4d5c;background:#182530;}
-.btn:disabled{opacity:.35;cursor:default;}
-.btn.primary{background:#1c3d38;border-color:#2b5c56;color:var(--t1);}
-.btn.primary:hover:not(:disabled){background:#204742;}
+        .dot-live { width: 8px; height: 8px; border-radius: 50%; background: #12C79A; box-shadow: 0 0 0 0 rgba(18, 199, 154, .6); animation: live 1.8s infinite; }
+        @keyframes live { 70% { box-shadow: 0 0 0 8px rgba(18, 199, 154, 0); } 100% { box-shadow: 0 0 0 0 rgba(18, 199, 154, 0); } }
 
-.done-screen{text-align:center;padding:40px 20px;}
-.done-screen h2{font-family:var(--display);font-size:22px;margin-bottom:8px;}
-.done-screen .bigscore{font-family:var(--mono);font-size:40px;color:var(--good);margin:10px 0;}
-</style>
+        /* Phone mock-up: one 10s loop — payment arrives, gets checked, gets flagged, alert appears */
+        .phone {
+            --cycle: 10s;
+            position: relative; width: 292px; height: 530px; margin: 0 auto; padding: 10px; border-radius: 44px; background: #1E1B4B;
+            box-shadow: 0 50px 90px -30px rgba(109, 74, 255, .6), inset 0 0 0 2px #35308a;
+        }
+        .phone-notch { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 92px; height: 22px; background: #1E1B4B; border-radius: 0 0 16px 16px; z-index: 5; }
+        .phone-screen { position: relative; height: 100%; border-radius: 34px; overflow: hidden; padding: 42px 14px 14px; background: linear-gradient(180deg, #fff 0%, #F5F2FF 100%); }
+
+        .tx {
+            position: relative; display: flex; align-items: center; gap: 10px; height: 62px; padding: 0 12px; margin-bottom: 10px;
+            border-radius: 16px; background: #fff; border: 1px solid #ECE8FF; box-shadow: 0 6px 16px -10px rgba(30, 27, 75, .35);
+        }
+        .tx-ic { width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; font-size: 18px; flex-shrink: 0; }
+        .tx-name { font-size: 12.5px; font-weight: 700; color: #1E1B4B; line-height: 1.2; }
+        .tx-sub { font-size: 11px; color: #6b7280; }
+        .tx-amt { margin-left: auto; text-align: right; font-size: 12.5px; font-weight: 700; color: #1E1B4B; }
+        .pill { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 9999px; }
+        .pill-wrap { position: relative; height: 18px; width: 64px; margin-top: 2px; margin-left: auto; }
+        .pill-wrap .pill { position: absolute; right: 0; top: 0; }
+
+        .tx-new { animation: rowIn var(--cycle) ease infinite; }
+        .tx-flag { position: absolute; inset: -2px; border-radius: 18px; border: 2px solid #FF5D73; background: rgba(255, 93, 115, .08); opacity: 0; pointer-events: none; animation: flagIn var(--cycle) ease infinite; }
+        .tx-scan { position: absolute; inset: 0; border-radius: 16px; overflow: hidden; opacity: 0; pointer-events: none; animation: scanFade var(--cycle) ease infinite; }
+        .tx-scan::after { content: ""; position: absolute; top: 0; bottom: 0; width: 40%; background: linear-gradient(90deg, transparent, rgba(109, 74, 255, .28), transparent); animation: scanMove 1.1s linear infinite; }
+        .pill-check { animation: scanFade var(--cycle) ease infinite; opacity: 0; }
+        .pill-flag { animation: pillFlag var(--cycle) ease infinite; opacity: 0; }
+
+        .sheet {
+            position: absolute; left: 12px; right: 12px; bottom: 14px; padding: 14px; background: #fff; border-radius: 22px;
+            border-top: 4px solid #FF5D73; box-shadow: 0 -14px 40px -12px rgba(30, 27, 75, .4); opacity: 0; animation: sheet var(--cycle) cubic-bezier(.2, .8, .2, 1) infinite;
+        }
+        .sheet-ic { width: 34px; height: 34px; border-radius: 12px; background: #FFEDEF; color: #FF5D73; display: grid; place-items: center; font-weight: 800; flex-shrink: 0; }
+        .mini-btn { flex: 1; text-align: center; font-size: 11px; font-weight: 700; padding: 8px 6px; border-radius: 10px; }
+
+        @keyframes rowIn { 0%, 8% { opacity: 0; transform: translateX(36px); } 15%, 94% { opacity: 1; transform: translateX(0); } 98%, 100% { opacity: 0; transform: translateX(0); } }
+        @keyframes scanFade { 0%, 15% { opacity: 0; } 18%, 38% { opacity: 1; } 40%, 100% { opacity: 0; } }
+        @keyframes scanMove { from { transform: translateX(-110%); } to { transform: translateX(280%); } }
+        @keyframes flagIn {
+            0%, 39% { opacity: 0; box-shadow: 0 0 0 0 rgba(255, 93, 115, .5); }
+            41% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 93, 115, .5); }
+            50% { opacity: 1; box-shadow: 0 0 0 12px rgba(255, 93, 115, 0); }
+            94% { opacity: 1; }
+            98%, 100% { opacity: 0; }
+        }
+        @keyframes pillFlag { 0%, 39% { opacity: 0; transform: scale(.7); } 43%, 94% { opacity: 1; transform: scale(1); } 98%, 100% { opacity: 0; } }
+        @keyframes sheet { 0%, 46% { opacity: 0; transform: translateY(130%); } 53%, 90% { opacity: 1; transform: translateY(0); } 95%, 100% { opacity: 0; transform: translateY(130%); } }
+
+        .float-badge { position: absolute; display: none; align-items: center; gap: 10px; background: #fff; padding: 10px 16px 10px 10px; border-radius: 9999px; box-shadow: 0 20px 40px -18px rgba(30, 27, 75, .5); font-size: 13px; font-weight: 700; animation: bob 5s ease-in-out infinite; }
+        @media (min-width: 640px) { .float-badge { display: flex; } }
+        .float-badge span.ic { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; }
+        @keyframes bob { 50% { transform: translateY(-12px); } }
+
+        /* ------------------------------------------------------------
+           Problem illustration
+        ------------------------------------------------------------ */
+        .pulse-ring { transform-box: fill-box; transform-origin: center; animation: ring 3s ease-out infinite; }
+        @keyframes ring { from { transform: scale(.7); opacity: .45; } to { transform: scale(1.9); opacity: 0; } }
+
+        /* ------------------------------------------------------------
+           Features
+        ------------------------------------------------------------ */
+        .fcard { position: relative; border-radius: 28px; padding: 28px; overflow: hidden; transition: transform .3s ease, box-shadow .3s ease; }
+        .fcard:hover { transform: translateY(-5px); box-shadow: 0 28px 50px -28px rgba(30, 27, 75, .45); }
+        .ficon { width: 48px; height: 48px; border-radius: 16px; display: grid; place-items: center; margin-bottom: 18px; }
+        .ficon svg { width: 24px; height: 24px; }
+        .f-iris { background: linear-gradient(140deg, #4B2FE0 0%, #6D4AFF 45%, #B24BF3 100%); color: #fff; }
+        .f-mint { background: #E6FBF5; }
+        .f-sun { background: #FFF5DD; }
+        .f-azure { background: #E8F5FF; }
+        .f-coral { background: #FFEDEF; }
+        .f-lilac { background: #F1EEFF; }
+
+        .draw { stroke-dasharray: 100; stroke-dashoffset: 100; transition: stroke-dashoffset 2.2s ease .3s; }
+        .in .draw { stroke-dashoffset: 0; }
+        .ping { transform-box: fill-box; transform-origin: center; animation: pingA 1.8s ease-out infinite; }
+        @keyframes pingA { from { transform: scale(1); opacity: 1; } to { transform: scale(3.2); opacity: 0; } }
+
+        .rrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; border-radius: 14px; background: #fff; font-size: 13px; font-weight: 700; box-shadow: 0 6px 14px -10px rgba(30, 27, 75, .35); }
+        .js .fast .rrow { opacity: 0; transform: translateX(-14px); transition: opacity .5s ease, transform .5s ease; }
+        .js .in .fast .rrow { opacity: 1; transform: none; }
+        .in .fast .rrow:nth-child(1) { transition-delay: .3s; }
+        .in .fast .rrow:nth-child(2) { transition-delay: .8s; }
+        .in .fast .rrow:nth-child(3) { transition-delay: 1.3s; }
+
+        .bell { transform-origin: 50% 10%; animation: ringBell 3s ease-in-out infinite; }
+        @keyframes ringBell { 0%, 60%, 100% { transform: rotate(0); } 64% { transform: rotate(16deg); } 68% { transform: rotate(-14deg); } 72% { transform: rotate(10deg); } 76% { transform: rotate(-8deg); } 80% { transform: rotate(0); } }
+
+        .radar { position: relative; width: 120px; height: 120px; display: grid; place-items: center; margin: 22px auto 0; }
+        .radar i { position: absolute; inset: 0; border-radius: 50%; border: 2px solid #2FA8F5; opacity: 0; animation: radar 3.6s ease-out infinite; }
+        .radar i:nth-child(2) { animation-delay: 1.2s; }
+        .radar i:nth-child(3) { animation-delay: 2.4s; }
+        @keyframes radar { from { transform: scale(.35); opacity: .7; } to { transform: scale(1); opacity: 0; } }
+
+        /* ------------------------------------------------------------
+           Demo
+        ------------------------------------------------------------ */
+        .demo-bg { background: linear-gradient(135deg, #3B25C9 0%, #6D4AFF 50%, #B24BF3 100%); }
+        .chip { padding: .45rem 1rem; border-radius: 9999px; font-size: 13px; font-weight: 700; background: #F1EEFF; color: #4B2FE0; border: 2px solid transparent; cursor: pointer; transition: transform .2s, border-color .2s, background .2s; }
+        .chip:hover { transform: translateY(-2px); border-color: #6D4AFF; background: #fff; }
+        .amount-field { display: flex; align-items: center; border: 2px solid #E4DEFF; border-radius: 16px; background: #fff; transition: border-color .2s, box-shadow .2s; }
+        .amount-field:focus-within { border-color: #6D4AFF; box-shadow: 0 0 0 4px rgba(109, 74, 255, .15); }
+        .amount-field span { padding-left: 18px; font-weight: 800; font-size: 20px; color: #6D4AFF; }
+        .amount-field input { flex: 1; min-width: 0; border: 0; background: transparent; padding: 16px 18px 16px 10px; font-size: 20px; font-weight: 700; color: #1E1B4B; }
+        .amount-field input:focus { outline: none; }
+        .amount-field input::placeholder { color: #a7a3c9; font-weight: 500; }
+
+        .res { border-radius: 24px; padding: 24px; border: 2px solid transparent; transition: background .4s, border-color .4s; }
+        .res-idle, .res-load { --c: #6D4AFF; background: #F7F5FF; border-color: #E4DEFF; }
+        .res-low { --c: #12C79A; background: #E6FBF5; border-color: #7FE3C6; }
+        .res-med { --c: #FFB938; background: #FFF5DD; border-color: #FFD98A; }
+        .res-high, .res-bad { --c: #FF5D73; background: #FFEDEF; border-color: #FF9FAD; }
+        .res-icon { width: 46px; height: 46px; border-radius: 16px; display: grid; place-items: center; flex-shrink: 0; font-weight: 800; font-size: 22px; background: var(--c); color: #fff; }
+        .res-med .res-icon { color: #1E1B4B; }
+        .res-load .res-icon { animation: spin 1.2s linear infinite; }
+        .meter { position: relative; display: flex; gap: 4px; height: 10px; margin-top: 26px; }
+        .meter .seg { flex: 1; border-radius: 9999px; }
+        .meter .seg:nth-child(1) { background: #12C79A; }
+        .meter .seg:nth-child(2) { background: #FFB938; }
+        .meter .seg:nth-child(3) { background: #FF5D73; }
+        .meter-marker { position: absolute; top: -6px; left: 0; width: 22px; height: 22px; margin-left: -11px; border-radius: 50%; background: #fff; border: 5px solid var(--c); box-shadow: 0 4px 10px rgba(30, 27, 75, .25); transition: left .8s cubic-bezier(.34, 1.56, .64, 1), opacity .3s; opacity: 0; }
+        .meter-legend { display: flex; justify-content: space-between; margin-top: 12px; font-size: 12px; font-weight: 700; color: #4b5563; }
+
+        /* ------------------------------------------------------------
+           Users
+        ------------------------------------------------------------ */
+        .ucard { border-radius: 28px; overflow: hidden; background: #fff; box-shadow: 0 10px 30px -18px rgba(30, 27, 75, .35); transition: transform .3s ease, box-shadow .3s ease; }
+        .ucard:hover { transform: translateY(-6px); box-shadow: 0 30px 50px -26px rgba(30, 27, 75, .5); }
+        .ucard svg { display: block; width: 100%; height: auto; transition: transform .5s ease; }
+        .ucard:hover svg { transform: scale(1.05); }
+        .upanel { overflow: hidden; }
+
+        /* ------------------------------------------------------------
+           CTA
+        ------------------------------------------------------------ */
+        .cta-bg { background: linear-gradient(120deg, #FF5D73 0%, #FF8A5B 50%, #FFB938 100%); position: relative; overflow: hidden; }
+        .shape { position: absolute; border-radius: 50%; background: rgba(255, 255, 255, .2); animation: bob 7s ease-in-out infinite; }
+
+        /* ------------------------------------------------------------
+           Scroll reveal (only when JS is on)
+        ------------------------------------------------------------ */
+        .js .reveal { opacity: 0; transform: translateY(20px); transition: opacity .7s ease, transform .7s ease; transition-delay: var(--d, 0s); }
+        .js .reveal.in { opacity: 1; transform: none; }
+
+        /* ------------------------------------------------------------
+           Reduced motion: keep everything visible, stop the movement
+        ------------------------------------------------------------ */
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            *, *::before, *::after { animation: none !important; transition: none !important; }
+            .js .reveal, .js .fast .rrow { opacity: 1 !important; transform: none !important; }
+            .draw { stroke-dashoffset: 0 !important; }
+            .tx-new, .sheet, .tx-flag, .pill-flag { opacity: 1 !important; transform: none !important; }
+            .tx-scan, .pill-check { display: none; }
+        }
+    </style>
 </head>
+
 <body>
-<div class="app">
-  <div class="hdr">
-    <h1>Spot the conflict</h1>
-    <p class="sub">Read the interleaved schedule below, then decide what kind of conflict it shows. The name is revealed only after you answer.</p>
-  </div>
 
-  <div class="hud">
-    <div class="qcount" id="qcount"></div>
-    <div class="qdots" id="qdots"></div>
-    <div class="score">Score <b id="scoreVal">0</b>/<span id="scoreTotal">0</span></div>
-  </div>
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+    <header class="sticky top-0 z-50 bg-white/85 backdrop-blur-md border-b border-iris/10">
 
-  <div class="timeline-panel">
-    <div class="timeline-title"><span>Schedule</span><span id="tlItem"></span></div>
-    <div class="timeline" id="timeline"></div>
-  </div>
+        <div class="max-w-7xl mx-auto px-6 h-[72px] flex items-center justify-between">
 
-  <div class="prompt">Which conflict does this schedule show?</div>
-  <div class="options" id="options"></div>
+            <!-- Logo -->
+            <a href="#home" class="flex items-center gap-3" aria-label="FinGuard AI home">
+                <span class="logo-tile">
+                    <img src="logo.png" alt="" class="w-full h-full object-contain"
+                         onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
+                    <svg hidden viewBox="0 0 24 24" class="w-full h-full" fill="none" stroke="#7CF0D0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        <path d="M9 12l2 2 4-4" />
+                    </svg>
+                </span>
+                <span>
+                    <span class="block font-display text-xl font-extrabold text-ink leading-none">FinGuard AI</span>
+                    <span class="block text-[11px] text-slate-500 mt-1">Intelligent Financial Security</span>
+                </span>
+            </a>
 
-  <div class="result-banner" id="resultBanner"></div>
+            <!-- Desktop navigation -->
+            <nav class="hidden md:block" aria-label="Main navigation">
+                <ul class="flex items-center gap-8 text-sm font-medium text-ink/80">
+                    <li><a href="#home" class="nav-link">Home</a></li>
+                    <li><a href="#features" class="nav-link">Features</a></li>
+                    <li><a href="#users" class="nav-link">Users</a></li>
+                    <li><a href="#contact" class="nav-link">Contact</a></li>
+                </ul>
+            </nav>
 
-  <div class="reveal" id="reveal">
-    <div class="card-title">Revealed</div>
-    <div class="name-line" id="revealName"></div>
-    <div class="explain" id="revealExplain"></div>
-  </div>
+            <div class="flex items-center gap-3">
+                <div class="hidden md:block">
+                    <a href="#demo" class="btn btn-primary" style="padding:.6rem 1.3rem;font-size:14px;">Try the demo</a>
+                </div>
 
-  <div class="controls">
-    <button class="btn" id="retryBtn" style="display:none;">Try again</button>
-    <button class="btn primary" id="nextBtn" style="display:none;">Next schedule →</button>
-  </div>
+                <!-- Mobile menu button -->
+                <button id="menuBtn" type="button" aria-expanded="false" aria-controls="mobileNav" aria-label="Open menu"
+                        class="md:hidden w-11 h-11 grid place-items-center rounded-xl bg-iris-50 text-iris">
+                    <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
+                        <path d="M4 7h16M4 12h16M4 17h16" />
+                    </svg>
+                </button>
+            </div>
+        </div>
 
-  <div id="doneScreen" class="done-screen" style="display:none;"></div>
-</div>
+        <!-- Mobile navigation -->
+        <nav id="mobileNav" class="hidden md:hidden border-t border-iris/10 bg-white" aria-label="Mobile navigation">
+            <ul class="px-6 py-4 flex flex-col gap-1 font-medium">
+                <li><a href="#home" class="block py-3">Home</a></li>
+                <li><a href="#features" class="block py-3">Features</a></li>
+                <li><a href="#users" class="block py-3">Users</a></li>
+                <li><a href="#contact" class="block py-3">Contact</a></li>
+                <li class="pt-2"><a href="#demo" class="btn btn-primary w-full">Try the demo</a></li>
+            </ul>
+        </nav>
 
-<script>
-const TYPES = {
-  dirty: { label:'Dirty Read', tag:'Write → Read', short:'One transaction reads a value another transaction wrote but never committed.' },
-  lost: { label:'Lost Update', tag:'Write → Write', short:'Two transactions read the same value, then both write based on it — one write silently overwrites the other.' },
-  unrepeatable: { label:'Unrepeatable Read', tag:'Read → Write → Read', short:'The same transaction reads the same row twice and gets two different answers, because another transaction committed a change in between.' },
-};
+    </header>
 
-const QUESTIONS = [
-{
-  type:'dirty', item:'Accounts.Balance (Acc_No = 210)', initial:'₹8000',
-  steps:[
-    {tx:'t1', op:'BEGIN', desc:'T1 starts a transaction.', sql:'BEGIN;'},
-    {tx:'t1', op:'WRITE', desc:'T1 debits ₹2000 (not yet committed).', sql:'UPDATE Accounts SET Balance = Balance - 2000\nWHERE Acc_No = 210;', valueAfter:'₹6000'},
-    {tx:'t2', op:'BEGIN', desc:'T2 starts a transaction.', sql:'BEGIN;'},
-    {tx:'t2', op:'READ', desc:'T2 reads the balance.', sql:'SELECT Balance FROM Accounts\nWHERE Acc_No = 210;', flag:true},
-    {tx:'t1', op:'ROLLBACK', desc:'T1 aborts — the debit is undone.', sql:'ROLLBACK;', valueAfter:'₹8000'},
-    {tx:'sys', op:'RESULT', desc:'T2 already used the ₹6000 figure in its own logic.'},
-  ],
-  explain:'T2 read ₹6000 while T1\u2019s debit was still uncommitted. When T1 rolled back, that value was never real — T2 acted on data that officially never existed.'
-},
-{
-  type:'lost', item:'Flights.Seats_Available (Flight_No = \'6E118\')', initial:'2',
-  steps:[
-    {tx:'t1', op:'BEGIN', desc:'T1 starts a transaction to book 1 seat.', sql:'BEGIN;'},
-    {tx:'t1', op:'READ', desc:'T1 reads seats available.', sql:"SELECT Seats_Available FROM Flights\nWHERE Flight_No = '6E118';"},
-    {tx:'t2', op:'BEGIN', desc:'T2 starts a transaction to book 1 seat.', sql:'BEGIN;'},
-    {tx:'t2', op:'READ', desc:'T2 reads the same seat count.', sql:"SELECT Seats_Available FROM Flights\nWHERE Flight_No = '6E118';", flag:true},
-    {tx:'t1', op:'WRITE', desc:'T1 writes its computed value and commits.', sql:"UPDATE Flights SET Seats_Available = 1\nWHERE Flight_No = '6E118';\nCOMMIT;", valueAfter:'1'},
-    {tx:'t2', op:'WRITE', desc:'T2 writes its own computed value and commits.', sql:"UPDATE Flights SET Seats_Available = 1\nWHERE Flight_No = '6E118';\nCOMMIT;", valueAfter:'1', flag:true},
-  ],
-  explain:'Both T1 and T2 read Seats_Available = 2 before either wrote back, so both independently computed 1. T2\u2019s write overwrote T1\u2019s — two seats were sold but the count only dropped by one.'
-},
-{
-  type:'unrepeatable', item:'Products.Price (Product_ID = 77)', initial:'₹1200',
-  steps:[
-    {tx:'t1', op:'BEGIN', desc:'T1 starts a transaction generating an invoice.', sql:'BEGIN;'},
-    {tx:'t1', op:'READ', desc:'T1 reads the price.', sql:'SELECT Price FROM Products\nWHERE Product_ID = 77;'},
-    {tx:'t2', op:'BEGIN', desc:'T2 starts a transaction to update pricing.', sql:'BEGIN;'},
-    {tx:'t2', op:'WRITE', desc:'T2 updates the price and commits.', sql:'UPDATE Products SET Price = 1450\nWHERE Product_ID = 77;\nCOMMIT;', valueAfter:'₹1450'},
-    {tx:'t1', op:'READ', desc:'T1 re-reads the same row, still inside its transaction.', sql:'SELECT Price FROM Products\nWHERE Product_ID = 77;', flag:true},
-  ],
-  explain:'T1 ran the exact same query twice inside one transaction and got two different answers, ₹1200 then ₹1450, because T2 committed a change to that row in between.'
-},
-{
-  type:'dirty', item:'Library.Copies_Available (Book_ID = \'B-42\')', initial:'1',
-  steps:[
-    {tx:'t1', op:'BEGIN', desc:'T1 starts a transaction to reserve the last copy.', sql:'BEGIN;'},
-    {tx:'t1', op:'WRITE', desc:'T1 marks the copy reserved (uncommitted).', sql:"UPDATE Library SET Copies_Available = 0\nWHERE Book_ID = 'B-42';", valueAfter:'0'},
-    {tx:'t2', op:'BEGIN', desc:'T2 starts a transaction to check availability.', sql:'BEGIN;'},
-    {tx:'t2', op:'READ', desc:'T2 reads the copy count.', sql:"SELECT Copies_Available FROM Library\nWHERE Book_ID = 'B-42';", flag:true},
-    {tx:'t1', op:'ROLLBACK', desc:'T1 aborts — the patron cancelled the reservation request.', sql:'ROLLBACK;', valueAfter:'1'},
-    {tx:'sys', op:'RESULT', desc:'T2 already told a librarian "0 copies available", based on a value that was undone.'},
-  ],
-  explain:'T2 read Copies_Available = 0 while T1\u2019s reservation write was still uncommitted. T1 then rolled back, restoring the true value of 1 — but T2 had already used the never-committed 0.'
-},
-{
-  type:'lost', item:'Warehouse.Stock_Qty (SKU = \'WH-990\')', initial:'50',
-  steps:[
-    {tx:'t1', op:'BEGIN', desc:'T1 starts a transaction to fulfill an order of 10 units.', sql:'BEGIN;'},
-    {tx:'t1', op:'READ', desc:'T1 reads current stock.', sql:"SELECT Stock_Qty FROM Warehouse\nWHERE SKU = 'WH-990';"},
-    {tx:'t2', op:'BEGIN', desc:'T2 starts a transaction to fulfill a different order of 10 units.', sql:'BEGIN;'},
-    {tx:'t2', op:'READ', desc:'T2 reads the same stock value.', sql:"SELECT Stock_Qty FROM Warehouse\nWHERE SKU = 'WH-990';", flag:true},
-    {tx:'t1', op:'WRITE', desc:'T1 writes its computed value and commits.', sql:"UPDATE Warehouse SET Stock_Qty = 40\nWHERE SKU = 'WH-990';\nCOMMIT;", valueAfter:'40'},
-    {tx:'t2', op:'WRITE', desc:'T2 writes its own computed value and commits.', sql:"UPDATE Warehouse SET Stock_Qty = 40\nWHERE SKU = 'WH-990';\nCOMMIT;", valueAfter:'40', flag:true},
-  ],
-  explain:'Both transactions read Stock_Qty = 50 before either committed, so both computed 40. T2\u2019s write overwrote T1\u2019s — 20 units were shipped out but stock only dropped by 10.'
-},
-{
-  type:'unrepeatable', item:'Students.GPA (Student_ID = 3311)', initial:'8.2',
-  steps:[
-    {tx:'t1', op:'BEGIN', desc:'T1 starts a transaction generating a transcript.', sql:'BEGIN;'},
-    {tx:'t1', op:'READ', desc:'T1 reads the GPA.', sql:'SELECT GPA FROM Students\nWHERE Student_ID = 3311;'},
-    {tx:'t2', op:'BEGIN', desc:'T2 starts a transaction after a grade correction.', sql:'BEGIN;'},
-    {tx:'t2', op:'WRITE', desc:'T2 updates the GPA and commits.', sql:'UPDATE Students SET GPA = 8.6\nWHERE Student_ID = 3311;\nCOMMIT;', valueAfter:'8.6'},
-    {tx:'t1', op:'READ', desc:'T1 re-reads the same row for a final consistency check.', sql:'SELECT GPA FROM Students\nWHERE Student_ID = 3311;', flag:true},
-  ],
-  explain:'T1 queried the same row twice within one transaction and got 8.2 then 8.6, because T2 committed a grade correction in between the two reads.'
-},
-];
 
-let qIdx = 0;
-let answered = false;
-let selectedKey = null;
-let results = []; // 'correct' | 'wrong' | null per question
+    <main>
 
-const el = {
-  qcount: document.getElementById('qcount'),
-  qdots: document.getElementById('qdots'),
-  scoreVal: document.getElementById('scoreVal'),
-  scoreTotal: document.getElementById('scoreTotal'),
-  tlItem: document.getElementById('tlItem'),
-  timeline: document.getElementById('timeline'),
-  options: document.getElementById('options'),
-  resultBanner: document.getElementById('resultBanner'),
-  reveal: document.getElementById('reveal'),
-  revealName: document.getElementById('revealName'),
-  revealExplain: document.getElementById('revealExplain'),
-  retryBtn: document.getElementById('retryBtn'),
-  nextBtn: document.getElementById('nextBtn'),
-  doneScreen: document.getElementById('doneScreen'),
-  app: document.querySelector('.app'),
-};
+        <!-- =================================================
+             HERO
+        ================================================== -->
+        <section id="home" class="hero-bg relative overflow-hidden">
 
-function currentValue(q, upToIdx){
-  let v = q.initial;
-  for(let i=0;i<=upToIdx;i++){ if(q.steps[i].valueAfter !== undefined) v = q.steps[i].valueAfter; }
-  return v;
-}
+            <!-- colourful background blobs -->
+            <div class="blob" style="width:420px;height:420px;background:#8B5CF6;top:-120px;left:-120px;" aria-hidden="true"></div>
+            <div class="blob" style="width:360px;height:360px;background:#FF8FA3;top:120px;right:-100px;animation-delay:-5s;" aria-hidden="true"></div>
+            <div class="blob" style="width:300px;height:300px;background:#7CF0D0;bottom:-100px;left:35%;animation-delay:-9s;" aria-hidden="true"></div>
 
-function renderDots(){
-  el.qdots.innerHTML = '';
-  QUESTIONS.forEach((_, i) => {
-    const d = document.createElement('div');
-    let cls = 'qdot';
-    if(results[i] === 'correct') cls += ' done-correct';
-    else if(results[i] === 'wrong') cls += ' done-wrong';
-    if(i === qIdx) cls += ' active';
-    d.className = cls;
-    el.qdots.appendChild(d);
-  });
-}
+            <div class="relative max-w-7xl mx-auto px-6 py-16 md:py-24">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
 
-function renderQuestion(){
-  answered = false;
-  selectedKey = null;
-  const q = QUESTIONS[qIdx];
+                    <!-- Hero text -->
+                    <div>
+                        <div class="inline-flex items-center gap-2 bg-white border border-iris/15 text-iris-700 px-4 py-2 rounded-full text-sm font-bold mb-7 shadow-sm">
+                            <span class="dot-live" aria-hidden="true"></span>
+                            AI-powered financial security
+                        </div>
 
-  el.qcount.textContent = `Schedule ${qIdx+1} of ${QUESTIONS.length}`;
-  el.tlItem.textContent = q.item;
-  renderDots();
+                        <h1 class="font-display font-extrabold text-ink text-5xl md:text-6xl xl:text-7xl leading-[1.05] tracking-tight">
+                            Detect fraud
+                            <span class="grad-text block">before it becomes a loss.</span>
+                        </h1>
 
-  el.timeline.innerHTML = '';
-  q.steps.forEach(step => {
-    const row = document.createElement('div');
-    row.className = 'row';
-    if(step.tx === 'sys'){
-      const note = document.createElement('div');
-      note.className = 'sys-note';
-      note.textContent = step.desc;
-      row.appendChild(note);
-      el.timeline.appendChild(row);
-      return;
-    }
-    const left = document.createElement('div');
-    left.className = 'slot' + (step.tx === 't1' ? ' t1 filled' : '');
-    const mid = document.createElement('div');
-    mid.className = 'mid';
-    mid.innerHTML = '<div class="dot"></div>';
-    const right = document.createElement('div');
-    right.className = 'slot' + (step.tx === 't2' ? ' t2 filled' : '');
-    const content = `<div class="op">${step.op}</div><div class="desc">${step.desc}</div><div class="sql">${step.sql}</div>`;
-    if(step.tx === 't1') left.innerHTML = content;
-    if(step.tx === 't2') right.innerHTML = content;
-    row.appendChild(left); row.appendChild(mid); row.appendChild(right);
-    row.dataset.flag = step.flag ? '1' : '0';
-    el.timeline.appendChild(row);
-  });
+                        <p class="mt-6 max-w-xl text-lg text-slate-600 leading-relaxed">
+                            FinGuard AI keeps an eye on every payment and flags anything unusual, so suspicious
+                            transactions can be caught and reviewed before they turn into losses.
+                        </p>
 
-  // options
-  el.options.innerHTML = '';
-  Object.entries(TYPES).forEach(([key, t]) => {
-    const b = document.createElement('button');
-    b.className = 'opt';
-    b.innerHTML = `<div class="name"><div>${t.label}</div><div class="tag">${t.tag}</div></div><div class="mark"></div>`;
-    b.onclick = () => selectAnswer(key);
-    el.options.appendChild(b);
-  });
+                        <div class="mt-9 flex flex-col sm:flex-row gap-4">
+                            <a href="#demo" class="btn btn-primary">Check a transaction</a>
+                            <a href="#features" class="btn btn-ghost">See features</a>
+                        </div>
 
-  el.resultBanner.className = 'result-banner';
-  el.resultBanner.textContent = '';
-  el.reveal.className = 'reveal';
-  el.retryBtn.style.display = 'none';
-  el.nextBtn.style.display = 'none';
-}
+                        <ul class="mt-10 flex flex-wrap gap-x-7 gap-y-3 text-sm font-medium text-slate-700">
+                            <li class="flex items-center gap-2">
+                                <span class="w-5 h-5 rounded-full bg-mint grid place-items-center text-white" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7" /></svg>
+                                </span>
+                                Instant alerts
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="w-5 h-5 rounded-full bg-mint grid place-items-center text-white" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7" /></svg>
+                                </span>
+                                Clear risk levels
+                            </li>
+                            <li class="flex items-center gap-2">
+                                <span class="w-5 h-5 rounded-full bg-mint grid place-items-center text-white" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7" /></svg>
+                                </span>
+                                Easy to review
+                            </li>
+                        </ul>
+                    </div>
 
-function selectAnswer(key){
-  if(answered) return;
-  answered = true;
-  selectedKey = key;
-  const q = QUESTIONS[qIdx];
-  const isCorrect = key === q.type;
-  results[qIdx] = isCorrect ? 'correct' : 'wrong';
 
-  [...el.options.children].forEach(btn => {
-    btn.classList.add('locked');
-  });
-  const buttons = [...el.options.children];
-  const keys = Object.keys(TYPES);
-  buttons.forEach((btn, i) => {
-    const k = keys[i];
-    if(k === key) btn.classList.add('selected');
-    if(k === q.type){ btn.classList.add('correct'); btn.querySelector('.mark').textContent = '✓'; }
-    else if(k === key){ btn.classList.add('wrong'); btn.querySelector('.mark').textContent = '✗'; }
-    else btn.classList.add('dim');
-  });
+                    <!-- Hero visual: phone that catches a suspicious payment -->
+                    <div class="relative flex justify-center py-6">
 
-  el.resultBanner.className = 'result-banner show ' + (isCorrect ? 'correct' : 'wrong');
-  el.resultBanner.textContent = isCorrect ? 'Correct.' : `Not quite — this one is a ${TYPES[q.type].label}.`;
+                        <div class="float-badge" style="left:2%;top:18%;">
+                            <span class="ic bg-mint-100 text-mint-700" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7" /></svg>
+                            </span>
+                            Payments cleared
+                        </div>
 
-  // reveal the flagged rows now
-  [...el.timeline.children].forEach(row => {
-    if(row.dataset && row.dataset.flag === '1') row.classList.add('flag');
-  });
+                        <div class="float-badge" style="right:0;bottom:16%;animation-delay:-2.5s;">
+                            <span class="ic bg-coral-100 text-coral-700" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
+                            </span>
+                            Alert sent
+                        </div>
 
-  el.revealName.textContent = TYPES[q.type].label;
-  el.revealExplain.innerHTML = q.explain + `<br><br><b>General pattern:</b> ${TYPES[q.type].short}`;
-  el.reveal.className = 'reveal show';
+                        <div class="phone" role="img" aria-label="Illustration of the FinGuard AI app flagging an unusual payment and asking the customer to confirm it">
+                            <div class="phone-notch"></div>
+                            <div class="phone-screen">
 
-  updateScore();
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-8 h-8 rounded-xl bg-iris grid place-items-center text-white">
+                                            <svg viewBox="0 0 24 24" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="M9 12l2 2 4-4" /></svg>
+                                        </span>
+                                        <div>
+                                            <p class="text-[13px] font-bold text-ink leading-none">FinGuard</p>
+                                            <p class="text-[10px] text-slate-500 mt-1">Watching your payments</p>
+                                        </div>
+                                    </div>
+                                    <span class="pill bg-mint-50 text-mint-700">● Active</span>
+                                </div>
 
-  if(qIdx < QUESTIONS.length - 1){
-    el.nextBtn.style.display = 'inline-block';
-  } else {
-    el.nextBtn.textContent = 'See results';
-    el.nextBtn.style.display = 'inline-block';
-  }
-  renderDots();
-}
+                                <p class="text-[11px] font-bold text-slate-400 mb-2">Today</p>
 
-function updateScore(){
-  const correctCount = results.filter(r => r === 'correct').length;
-  const answeredCount = results.filter(r => r !== undefined && r !== null).length;
-  el.scoreVal.textContent = correctCount;
-  el.scoreTotal.textContent = answeredCount;
-}
+                                <div class="tx">
+                                    <span class="tx-ic bg-sun-50">☕</span>
+                                    <div><p class="tx-name">Café Aroma</p><p class="tx-sub">10:42 AM</p></div>
+                                    <div class="tx-amt">₹240<div class="pill-wrap"><span class="pill bg-mint-50 text-mint-700">Safe</span></div></div>
+                                </div>
 
-function next(){
-  if(qIdx < QUESTIONS.length - 1){
-    qIdx++;
-    renderQuestion();
-  } else {
-    showDone();
-  }
-}
+                                <div class="tx">
+                                    <span class="tx-ic bg-mint-50">🛒</span>
+                                    <div><p class="tx-name">Fresh Basket</p><p class="tx-sub">12:15 PM</p></div>
+                                    <div class="tx-amt">₹1,860<div class="pill-wrap"><span class="pill bg-mint-50 text-mint-700">Safe</span></div></div>
+                                </div>
 
-function showDone(){
-  document.querySelectorAll('.timeline-panel, .prompt, .options, .result-banner, .reveal, .controls, .hud').forEach(elx => elx.style.display = 'none');
-  const correctCount = results.filter(r => r === 'correct').length;
-  el.doneScreen.style.display = 'block';
-  el.doneScreen.innerHTML = `
-    <h2>Quiz complete</h2>
-    <div class="bigscore">${correctCount} / ${QUESTIONS.length}</div>
-    <p style="color:var(--muted);font-size:13.5px;">Correct identifications across dirty reads, lost updates, and unrepeatable reads.</p>
-    <button class="btn primary" id="restartBtn" style="margin-top:14px;">Restart quiz</button>
-  `;
-  document.getElementById('restartBtn').onclick = restart;
-}
+                                <div class="tx tx-new">
+                                    <span class="tx-ic bg-iris-50">💻</span>
+                                    <div><p class="tx-name">Unknown online store</p><p class="tx-sub">Just now</p></div>
+                                    <div class="tx-amt">₹1,25,000
+                                        <div class="pill-wrap">
+                                            <span class="pill pill-check bg-iris-50 text-iris-700">Checking…</span>
+                                            <span class="pill pill-flag bg-coral text-white">Flagged</span>
+                                        </div>
+                                    </div>
+                                    <span class="tx-scan"></span>
+                                    <span class="tx-flag"></span>
+                                </div>
 
-function restart(){
-  qIdx = 0;
-  results = [];
-  document.querySelectorAll('.timeline-panel, .prompt, .options, .result-banner, .reveal, .controls, .hud').forEach(elx => elx.style.display = '');
-  el.doneScreen.style.display = 'none';
-  el.nextBtn.textContent = 'Next schedule →';
-  renderQuestion();
-  updateScore();
-}
+                                <div class="sheet">
+                                    <div class="flex items-start gap-3">
+                                        <span class="sheet-ic">!</span>
+                                        <div>
+                                            <p class="font-bold text-[13px] text-ink">Payment paused</p>
+                                            <p class="text-[11px] text-slate-600 mt-0.5 leading-snug">This looks unusual for you. Was it you?</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-2 mt-3">
+                                        <span class="mini-btn bg-ink text-white">Yes, it's me</span>
+                                        <span class="mini-btn bg-coral text-white">No, block it</span>
+                                    </div>
+                                </div>
 
-el.nextBtn.onclick = next;
+                            </div>
+                        </div>
 
-renderQuestion();
-updateScore();
-</script>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+
+
+        <!-- =================================================
+             PROBLEM STATEMENT
+        ================================================== -->
+        <section class="bg-white px-6 py-20 md:py-28">
+
+            <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-14 items-center">
+
+                <div class="reveal">
+                    <h2 class="font-display font-extrabold text-ink text-4xl md:text-5xl leading-tight tracking-tight">
+                        Financial transactions are growing every day
+                    </h2>
+
+                    <p class="mt-6 text-lg text-slate-600 leading-relaxed max-w-xl">
+                        Banks and financial institutions process thousands or millions of transactions every day.
+                        Checking each one by hand is slow and difficult. FinGuard AI helps identify unusual
+                        transaction behaviour so potentially fraudulent activity can be investigated quickly.
+                    </p>
+
+                    <div class="mt-8">
+                        <a href="#features" class="btn btn-ghost">Explore what it does</a>
+                    </div>
+                </div>
+
+                <!-- Illustration: payments stream in, the shield lets normal ones through and stops unusual ones -->
+                <div class="reveal" style="--d:.15s">
+                    <div class="rounded-[32px] p-4 md:p-6" style="background:linear-gradient(140deg,#F1EEFF 0%,#FFF0F3 100%);">
+                        <svg id="flowSvg" viewBox="0 0 520 320" class="w-full h-auto" role="img"
+                             aria-label="Illustration: many payments flow towards a shield. Normal payments continue through, unusual ones are stopped.">
+                            <defs>
+                                <linearGradient id="shieldG" x1="0" y1="0" x2="1" y2="1">
+                                    <stop offset="0" stop-color="#6D4AFF" />
+                                    <stop offset="1" stop-color="#E14FC0" />
+                                </linearGradient>
+                            </defs>
+
+                            <!-- lanes -->
+                            <g stroke="#6D4AFF" stroke-opacity=".12" stroke-width="2" stroke-dasharray="2 8" stroke-linecap="round">
+                                <line x1="10" y1="110" x2="510" y2="110" />
+                                <line x1="10" y1="140" x2="510" y2="140" />
+                                <line x1="10" y1="180" x2="510" y2="180" />
+                                <line x1="10" y1="215" x2="510" y2="215" />
+                            </g>
+
+                            <!-- normal payments (pass through) -->
+                            <g fill="#12C79A">
+                                <circle r="7" cy="140"><animate attributeName="cx" from="10" to="510" dur="4.5s" begin="0s" repeatCount="indefinite" /></circle>
+                                <circle r="7" cy="140"><animate attributeName="cx" from="10" to="510" dur="4.5s" begin="2.25s" repeatCount="indefinite" /></circle>
+                                <circle r="7" cy="180"><animate attributeName="cx" from="10" to="510" dur="4.5s" begin="1s" repeatCount="indefinite" /></circle>
+                                <circle r="7" cy="180"><animate attributeName="cx" from="10" to="510" dur="4.5s" begin="3.2s" repeatCount="indefinite" /></circle>
+                            </g>
+                            <g fill="#2FA8F5">
+                                <circle r="5" cy="160"><animate attributeName="cx" from="10" to="510" dur="4s" begin=".5s" repeatCount="indefinite" /></circle>
+                                <circle r="5" cy="160"><animate attributeName="cx" from="10" to="510" dur="4s" begin="2.5s" repeatCount="indefinite" /></circle>
+                            </g>
+
+                            <!-- unusual payments (stopped) -->
+                            <circle cy="110" fill="#FF5D73">
+                                <animate attributeName="cx" values="10;196;196" keyTimes="0;.7;1" dur="4.5s" begin=".8s" repeatCount="indefinite" />
+                                <animate attributeName="r" values="7;7;18;18" keyTimes="0;.7;.8;1" dur="4.5s" begin=".8s" repeatCount="indefinite" />
+                                <animate attributeName="opacity" values="1;1;0;0" keyTimes="0;.7;.82;1" dur="4.5s" begin=".8s" repeatCount="indefinite" />
+                            </circle>
+                            <circle cy="215" fill="#FF5D73">
+                                <animate attributeName="cx" values="10;204;204" keyTimes="0;.7;1" dur="4.5s" begin="2.6s" repeatCount="indefinite" />
+                                <animate attributeName="r" values="7;7;18;18" keyTimes="0;.7;.8;1" dur="4.5s" begin="2.6s" repeatCount="indefinite" />
+                                <animate attributeName="opacity" values="1;1;0;0" keyTimes="0;.7;.82;1" dur="4.5s" begin="2.6s" repeatCount="indefinite" />
+                            </circle>
+
+                            <!-- shield -->
+                            <circle class="pulse-ring" cx="260" cy="168" r="62" fill="none" stroke="#6D4AFF" stroke-width="3" />
+                            <circle class="pulse-ring" cx="260" cy="168" r="62" fill="none" stroke="#E14FC0" stroke-width="3" style="animation-delay:1.5s" />
+                            <path d="M260 84 L322 108 V164 C322 208 294 236 260 252 C226 236 198 208 198 164 V108 Z" fill="url(#shieldG)" />
+                            <path d="M260 84 L322 108 V164 C322 208 294 236 260 252 Z" fill="#fff" opacity=".1" />
+                            <path d="M232 166 L252 186 L292 144" fill="none" stroke="#fff" stroke-width="13" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+
+                        <div class="flex flex-wrap gap-x-6 gap-y-2 px-2 pt-3 text-sm font-medium text-slate-700">
+                            <span class="flex items-center gap-2"><i class="w-3 h-3 rounded-full bg-mint inline-block"></i>Normal payments go through</span>
+                            <span class="flex items-center gap-2"><i class="w-3 h-3 rounded-full bg-coral inline-block"></i>Unusual ones get flagged</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+
+
+        <!-- =================================================
+             FEATURES
+        ================================================== -->
+        <section id="features" class="px-6 py-20 md:py-28" style="background:#F7F5FF;">
+
+            <div class="max-w-7xl mx-auto">
+
+                <div class="max-w-2xl mb-12 reveal">
+                    <h2 class="font-display font-extrabold text-ink text-4xl md:text-5xl leading-tight tracking-tight">
+                        Intelligent fraud protection
+                    </h2>
+                    <p class="mt-4 text-lg text-slate-600">
+                        Everything you need to spot suspicious activity early and act on it with confidence.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                    <!-- 1. AI-Powered Detection (wide) -->
+                    <article class="fcard f-iris lg:col-span-2 reveal">
+                        <div class="ficon" style="background:rgba(255,255,255,.2);color:#fff;">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z" />
+                                <path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9L19 15z" />
+                            </svg>
+                        </div>
+                        <h3 class="font-display text-2xl font-extrabold mb-3">AI-powered detection</h3>
+                        <p class="text-white/85 leading-relaxed max-w-lg">
+                            Smart AI models study transaction patterns and pick out behaviour that looks suspicious.
+                        </p>
+
+                        <svg viewBox="0 0 400 120" class="w-full mt-6" role="img" aria-label="A steady spending line with one unusual spike highlighted">
+                            <path d="M0 96 H400" stroke="#fff" stroke-opacity=".15" />
+                            <path class="draw" pathLength="100" d="M0 78 C25 66 40 90 65 76 S105 62 130 74 S170 88 195 72 S225 66 245 74 L265 18 L285 76 S320 68 345 76 S385 80 400 72"
+                                  fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+                            <line x1="265" y1="26" x2="265" y2="112" stroke="#fff" stroke-opacity=".35" stroke-dasharray="4 5" />
+                            <circle class="ping" cx="265" cy="18" r="6" fill="none" stroke="#FFB938" stroke-width="2" />
+                            <circle cx="265" cy="18" r="6" fill="#FF5D73" stroke="#fff" stroke-width="3" />
+                            <g transform="translate(280 6)">
+                                <rect width="76" height="24" rx="12" fill="#fff" />
+                                <text x="38" y="16.5" text-anchor="middle" font-size="11" font-weight="700" fill="#C9243F" font-family="DM Sans, sans-serif">Unusual</text>
+                            </g>
+                        </svg>
+                    </article>
+
+                    <!-- 2. Anomaly Detection -->
+                    <article class="fcard f-mint reveal" style="--d:.1s">
+                        <div class="ficon bg-mint text-white">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
+                        </div>
+                        <h3 class="font-display text-2xl font-extrabold mb-3">Anomaly detection</h3>
+                        <p class="text-slate-700 leading-relaxed">
+                            Unusual transactions stand out when new activity is compared with normal behaviour.
+                        </p>
+                        <svg viewBox="0 0 220 90" class="w-full mt-5" role="img" aria-label="A cluster of normal payments with one outlier">
+                            <g fill="#12C79A">
+                                <circle cx="30" cy="52" r="6" /><circle cx="52" cy="38" r="6" /><circle cx="60" cy="62" r="6" /><circle cx="80" cy="46" r="6" />
+                                <circle cx="96" cy="66" r="6" /><circle cx="104" cy="34" r="6" /><circle cx="122" cy="54" r="6" /><circle cx="70" cy="24" r="5" />
+                                <circle cx="136" cy="40" r="5" /><circle cx="44" cy="74" r="5" /><circle cx="112" cy="76" r="5" />
+                            </g>
+                            <circle class="ping" cx="188" cy="20" r="7" fill="none" stroke="#FF5D73" stroke-width="2" />
+                            <circle cx="188" cy="20" r="8" fill="#FF5D73" />
+                        </svg>
+                    </article>
+
+                    <!-- 3. Risk Classification -->
+                    <article class="fcard f-sun reveal">
+                        <div class="ficon bg-sun text-ink">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="M9 12l2 2 4-4" /></svg>
+                        </div>
+                        <h3 class="font-display text-2xl font-extrabold mb-3">Risk classification</h3>
+                        <p class="text-slate-700 leading-relaxed">
+                            Every transaction gets a clear risk level, so the next step is easy to decide.
+                        </p>
+                        <div class="flex flex-wrap gap-2 mt-5">
+                            <span class="pill bg-mint text-white" style="font-size:12px;padding:5px 12px;">Low</span>
+                            <span class="pill bg-sun text-ink" style="font-size:12px;padding:5px 12px;">Medium</span>
+                            <span class="pill bg-coral text-white" style="font-size:12px;padding:5px 12px;">High</span>
+                        </div>
+                    </article>
+
+                    <!-- 4. Fast Analysis (wide) -->
+                    <article class="fcard f-azure lg:col-span-2 reveal" style="--d:.1s">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
+                            <div>
+                                <div class="ficon bg-azure text-white">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" /></svg>
+                                </div>
+                                <h3 class="font-display text-2xl font-extrabold mb-3">Fast analysis</h3>
+                                <p class="text-slate-700 leading-relaxed">
+                                    Automated checks help security teams review suspicious transactions faster, with less manual work.
+                                </p>
+                            </div>
+                            <div class="fast flex flex-col gap-3" aria-hidden="true">
+                                <div class="rrow"><span>₹2,400</span><span class="pill bg-mint-100 text-mint-700">Cleared</span></div>
+                                <div class="rrow"><span>₹9,800</span><span class="pill bg-mint-100 text-mint-700">Cleared</span></div>
+                                <div class="rrow"><span>₹1,25,000</span><span class="pill bg-coral-100 text-coral-700">Needs review</span></div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- 5. Fraud Alerts (wide) -->
+                    <article class="fcard f-coral lg:col-span-2 reveal">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
+                            <div>
+                                <div class="ficon bg-coral text-white">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
+                                </div>
+                                <h3 class="font-display text-2xl font-extrabold mb-3">Fraud alerts</h3>
+                                <p class="text-slate-700 leading-relaxed">
+                                    Risky transactions are flagged right away, so they can be verified or investigated.
+                                </p>
+                            </div>
+                            <div class="bg-white rounded-2xl p-4 flex items-center gap-3 shadow-md" aria-hidden="true">
+                                <span class="w-11 h-11 rounded-xl bg-coral text-white grid place-items-center shrink-0">
+                                    <svg class="bell w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
+                                </span>
+                                <div>
+                                    <p class="font-bold text-sm text-ink">Suspicious payment flagged</p>
+                                    <p class="text-xs text-slate-500 mt-0.5">₹1,25,000 · Just now</p>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- 6. Secure Monitoring -->
+                    <article class="fcard f-lilac reveal" style="--d:.1s">
+                        <div class="ficon bg-iris text-white">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                        </div>
+                        <h3 class="font-display text-2xl font-extrabold mb-3">Secure monitoring</h3>
+                        <p class="text-slate-700 leading-relaxed">
+                            Continuous transaction monitoring supports a stronger financial security environment.
+                        </p>
+                        <div class="radar" aria-hidden="true">
+                            <i></i><i></i><i></i>
+                            <span class="w-14 h-14 rounded-full bg-azure text-white grid place-items-center relative z-10 shadow-lg">
+                                <svg viewBox="0 0 24 24" class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+                            </span>
+                        </div>
+                    </article>
+
+                </div>
+            </div>
+        </section>
+
+
+
+        <!-- =================================================
+             TRANSACTION DEMO
+        ================================================== -->
+        <section id="demo" class="demo-bg relative overflow-hidden px-6 py-20 md:py-28 text-white">
+
+            <div class="blob" style="width:340px;height:340px;background:#FF8FA3;top:-120px;right:-80px;opacity:.35;" aria-hidden="true"></div>
+            <div class="blob" style="width:300px;height:300px;background:#7CF0D0;bottom:-140px;left:-80px;opacity:.3;animation-delay:-6s;" aria-hidden="true"></div>
+
+            <div class="relative max-w-5xl mx-auto">
+
+                <div class="text-center max-w-2xl mx-auto mb-12 reveal">
+                    <h2 class="font-display font-extrabold text-4xl md:text-5xl leading-tight tracking-tight">
+                        Check transaction risk
+                    </h2>
+                    <p class="mt-4 text-lg text-white/85">
+                        Enter an amount to see a simple, simulated risk check.
+                    </p>
+                </div>
+
+                <div class="bg-white text-ink rounded-[32px] p-6 md:p-10 shadow-2xl grid grid-cols-1 md:grid-cols-2 gap-8 reveal" style="--d:.1s">
+
+                    <!-- Input -->
+                    <div>
+                        <label for="amount" class="block text-sm font-bold mb-2">Transaction amount</label>
+
+                        <div class="amount-field">
+                            <span aria-hidden="true">₹</span>
+                            <input type="number" id="amount" inputmode="numeric" min="1" placeholder="Enter amount">
+                        </div>
+
+                        <p class="text-xs font-medium text-slate-500 mt-5 mb-2">Or try an example</p>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" class="chip" data-amount="2500">₹2,500</button>
+                            <button type="button" class="chip" data-amount="65000">₹65,000</button>
+                            <button type="button" class="chip" data-amount="150000">₹1,50,000</button>
+                        </div>
+
+                        <button id="analyseBtn" type="button" onclick="checkRisk()" class="btn btn-primary w-full mt-7">
+                            <span class="spin" aria-hidden="true"></span>
+                            <span id="btnLabel">Analyse transaction</span>
+                        </button>
+                    </div>
+
+                    <!-- Result -->
+                    <div id="result" class="res res-idle" role="status" aria-live="polite">
+                        <div class="flex items-start gap-4">
+                            <span id="resultIcon" class="res-icon" aria-hidden="true">🛡</span>
+                            <div>
+                                <p id="resultTitle" class="font-display font-extrabold text-xl leading-tight">Waiting for a transaction</p>
+                                <p id="resultText" class="text-sm text-slate-700 mt-2 leading-relaxed">Enter an amount and choose Analyse transaction to see the result here.</p>
+                            </div>
+                        </div>
+
+                        <div class="meter" aria-hidden="true">
+                            <span class="seg"></span><span class="seg"></span><span class="seg"></span>
+                            <i id="marker" class="meter-marker"></i>
+                        </div>
+                        <div class="meter-legend" aria-hidden="true">
+                            <span>Low</span><span>Medium</span><span>High</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <p class="text-xs text-white/75 text-center mt-5">
+                    Demo only — this simplified interface does not perform real financial fraud detection.
+                </p>
+
+            </div>
+        </section>
+
+
+
+        <!-- =================================================
+             TARGET USERS
+        ================================================== -->
+        <section id="users" class="bg-white px-6 py-20 md:py-28">
+
+            <div class="max-w-7xl mx-auto">
+
+                <div class="max-w-2xl mb-12 reveal">
+                    <h2 class="font-display font-extrabold text-ink text-4xl md:text-5xl leading-tight tracking-tight">
+                        Who can use FinGuard AI?
+                    </h2>
+                    <p class="mt-4 text-lg text-slate-600">
+                        Built for everyone who wants payments to be safer, from the person paying to the team protecting the money.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+                    <!-- Customers -->
+                    <article class="ucard reveal">
+                        <div class="upanel" style="background:#E4DEFF;">
+                            <svg viewBox="0 0 240 140" role="img" aria-label="Illustration of a customer holding a phone with a shield">
+                                <circle cx="120" cy="150" r="78" fill="#6D4AFF" opacity=".15" />
+                                <circle cx="100" cy="52" r="20" fill="#FFB938" />
+                                <path d="M80 50 C80 28 122 28 120 50 C112 40 90 40 80 50Z" fill="#1E1B4B" />
+                                <path d="M60 140 C60 104 76 88 100 88 C124 88 140 104 140 140 Z" fill="#6D4AFF" />
+                                <rect x="136" y="42" width="48" height="80" rx="10" fill="#1E1B4B" />
+                                <rect x="141" y="50" width="38" height="64" rx="6" fill="#fff" />
+                                <path d="M160 60 l12 4 v10 c0 8 -5 12 -12 15 c-7 -3 -12 -7 -12 -15 v-10 z" fill="#12C79A" />
+                                <path d="M154 74 l4.5 4.5 8 -9" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+                                <rect x="147" y="96" width="26" height="5" rx="2.5" fill="#E4DEFF" />
+                                <rect x="151" y="105" width="18" height="5" rx="2.5" fill="#E4DEFF" />
+                            </svg>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="font-display font-extrabold text-xl">Customers</h3>
+                            <p class="text-sm text-slate-600 mt-2 leading-relaxed">Receive warnings about potentially suspicious financial activity.</p>
+                        </div>
+                    </article>
+
+                    <!-- Banks -->
+                    <article class="ucard reveal" style="--d:.08s">
+                        <div class="upanel" style="background:#C8F5E8;">
+                            <svg viewBox="0 0 240 140" role="img" aria-label="Illustration of a bank building">
+                                <circle cx="200" cy="30" r="14" fill="#FFB938" opacity=".8" />
+                                <polygon points="120,20 194,56 46,56" fill="#0B8F6E" />
+                                <circle cx="120" cy="42" r="6" fill="#FFB938" />
+                                <rect x="54" y="60" width="132" height="8" rx="2" fill="#12C79A" />
+                                <rect x="64" y="72" width="16" height="42" rx="3" fill="#fff" />
+                                <rect x="92" y="72" width="16" height="42" rx="3" fill="#fff" />
+                                <rect x="132" y="72" width="16" height="42" rx="3" fill="#fff" />
+                                <rect x="160" y="72" width="16" height="42" rx="3" fill="#fff" />
+                                <rect x="46" y="116" width="148" height="12" rx="4" fill="#0B8F6E" />
+                                <rect x="36" y="128" width="168" height="8" rx="4" fill="#12C79A" />
+                            </svg>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="font-display font-extrabold text-xl">Banks</h3>
+                            <p class="text-sm text-slate-600 mt-2 leading-relaxed">Monitor large volumes of transactions and identify unusual activity.</p>
+                        </div>
+                    </article>
+
+                    <!-- Financial Institutions -->
+                    <article class="ucard reveal" style="--d:.16s">
+                        <div class="upanel" style="background:#FFE9B8;">
+                            <svg viewBox="0 0 240 140" role="img" aria-label="Illustration of stacked payment cards">
+                                <g transform="rotate(-12 110 70)">
+                                    <rect x="52" y="30" width="116" height="74" rx="12" fill="#6D4AFF" />
+                                    <rect x="52" y="46" width="116" height="14" fill="#4B2FE0" />
+                                </g>
+                                <g transform="rotate(7 130 80)">
+                                    <rect x="72" y="42" width="116" height="74" rx="12" fill="#FF5D73" />
+                                    <rect x="86" y="62" width="24" height="18" rx="4" fill="#FFE9B8" />
+                                    <rect x="86" y="92" width="64" height="6" rx="3" fill="#fff" opacity=".85" />
+                                    <rect x="86" y="102" width="40" height="5" rx="2.5" fill="#fff" opacity=".6" />
+                                    <circle cx="160" cy="98" r="9" fill="#FFB938" />
+                                    <circle cx="170" cy="98" r="9" fill="#fff" opacity=".7" />
+                                </g>
+                            </svg>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="font-display font-extrabold text-xl">Financial institutions</h3>
+                            <p class="text-sm text-slate-600 mt-2 leading-relaxed">Strengthen transaction monitoring and financial risk management.</p>
+                        </div>
+                    </article>
+
+                    <!-- Security Analysts -->
+                    <article class="ucard reveal" style="--d:.24s">
+                        <div class="upanel" style="background:#FFD9DE;">
+                            <svg viewBox="0 0 240 140" role="img" aria-label="Illustration of a magnifying glass over a shield">
+                                <path d="M104 18 L142 32 V62 C142 88 124 104 104 114 C84 104 66 88 66 62 V32 Z" fill="#1E1B4B" />
+                                <path d="M88 64 L100 76 L122 50" fill="none" stroke="#7CF0D0" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+                                <circle cx="148" cy="82" r="26" fill="#fff" fill-opacity=".65" stroke="#FF5D73" stroke-width="8" />
+                                <line x1="167" y1="101" x2="192" y2="126" stroke="#1E1B4B" stroke-width="11" stroke-linecap="round" />
+                                <circle cx="148" cy="82" r="6" fill="#FF5D73" />
+                            </svg>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="font-display font-extrabold text-xl">Security analysts</h3>
+                            <p class="text-sm text-slate-600 mt-2 leading-relaxed">Investigate suspicious transactions and prioritise potential threats.</p>
+                        </div>
+                    </article>
+
+                </div>
+            </div>
+        </section>
+
+
+
+        <!-- =================================================
+             CALL TO ACTION
+        ================================================== -->
+        <section id="contact" class="cta-bg text-ink">
+
+            <div class="shape" style="width:180px;height:180px;top:-60px;left:6%;" aria-hidden="true"></div>
+            <div class="shape" style="width:110px;height:110px;bottom:-30px;left:32%;animation-delay:-3s;" aria-hidden="true"></div>
+            <div class="shape" style="width:240px;height:240px;top:-90px;right:4%;animation-delay:-5s;" aria-hidden="true"></div>
+
+            <div class="relative max-w-4xl mx-auto px-6 py-20 md:py-24 text-center reveal">
+
+                <h2 class="font-display font-extrabold text-4xl md:text-6xl leading-tight tracking-tight mb-5">
+                    Make every transaction safer.
+                </h2>
+
+                <p class="max-w-2xl mx-auto text-lg text-ink/85 leading-relaxed">
+                    Intelligent monitoring can help financial organisations identify suspicious behaviour
+                    and respond to potential threats faster.
+                </p>
+
+                <a href="#demo" class="btn btn-ink mt-9">Try the demo</a>
+
+            </div>
+        </section>
+
+    </main>
+
+
+
+    <!-- =====================================================
+         FOOTER
+    ====================================================== -->
+    <footer class="bg-ink text-slate-300">
+
+        <div class="max-w-7xl mx-auto px-6 py-10 flex flex-col md:flex-row justify-between items-center gap-5">
+
+            <div class="flex items-center gap-3">
+                <span class="logo-tile" style="background:#2b2770;">
+                    <img src="logo.png" alt="" class="w-full h-full object-contain"
+                         onerror="this.hidden=true;this.nextElementSibling.hidden=false;">
+                    <svg hidden viewBox="0 0 24 24" class="w-full h-full" fill="none" stroke="#7CF0D0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        <path d="M9 12l2 2 4-4" />
+                    </svg>
+                </span>
+                <div>
+                    <p class="text-white font-display font-extrabold text-lg leading-none">FinGuard AI</p>
+                    <p class="text-sm mt-1">Intelligent Financial Security</p>
+                </div>
+            </div>
+
+            <div class="text-sm text-center md:text-right">
+                <p>© 2026 FinGuard AI</p>
+                <p class="mt-1">Developed by Pranav Jayachandran</p>
+            </div>
+
+        </div>
+
+    </footer>
+
+
+
+    <!-- =====================================================
+         JAVASCRIPT
+    ====================================================== -->
+    <script>
+
+        /* ---------- Mobile menu ---------- */
+        (function () {
+            const btn = document.getElementById('menuBtn');
+            const nav = document.getElementById('mobileNav');
+
+            function setOpen(open) {
+                nav.classList.toggle('hidden', !open);
+                btn.setAttribute('aria-expanded', String(open));
+                btn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+            }
+
+            btn.addEventListener('click', function () {
+                setOpen(btn.getAttribute('aria-expanded') !== 'true');
+            });
+            nav.querySelectorAll('a').forEach(function (a) {
+                a.addEventListener('click', function () { setOpen(false); });
+            });
+        })();
+
+
+        /* ---------- Reveal on scroll ---------- */
+        (function () {
+            const items = document.querySelectorAll('.reveal');
+
+            if (!('IntersectionObserver' in window)) {
+                items.forEach(function (el) { el.classList.add('in'); });
+                return;
+            }
+
+            const io = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('in');
+                        io.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.15 });
+
+            items.forEach(function (el) { io.observe(el); });
+        })();
+
+
+        /* ---------- Respect reduced-motion for the SVG animation ---------- */
+        (function () {
+            if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                const svg = document.getElementById('flowSvg');
+                if (svg && svg.pauseAnimations) svg.pauseAnimations();
+            }
+        })();
+
+
+        /* ---------- Transaction risk demo ---------- */
+
+        document.querySelectorAll('.chip').forEach(function (chip) {
+            chip.addEventListener('click', function () {
+                document.getElementById('amount').value = chip.dataset.amount;
+                checkRisk();
+            });
+        });
+
+        document.getElementById('amount').addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') checkRisk();
+        });
+
+        function setResult(state, icon, title, text, position) {
+            const result = document.getElementById('result');
+            const marker = document.getElementById('marker');
+
+            result.className = 'res res-' + state;
+            document.getElementById('resultIcon').textContent = icon;
+            document.getElementById('resultTitle').textContent = title;
+            document.getElementById('resultText').textContent = text;
+
+            if (position === null) {
+                marker.style.opacity = '0';
+                marker.style.left = '0%';
+                return;
+            }
+
+            marker.style.opacity = '1';
+            requestAnimationFrame(function () {
+                marker.style.left = position + '%';
+            });
+        }
+
+        function checkRisk() {
+
+            const input = document.getElementById('amount');
+            const button = document.getElementById('analyseBtn');
+            const label = document.getElementById('btnLabel');
+            const amount = Number(input.value);
+
+            if (!amount || amount <= 0) {
+                setResult('bad', '!', 'Enter a valid amount',
+                    'Type an amount greater than ₹0, then choose Analyse transaction.', null);
+                input.focus();
+                return;
+            }
+
+            /*
+             * This is only a simple demonstration.
+             * A real fraud detection system would use
+             * a trained machine learning model and
+             * multiple transaction features.
+             */
+
+            setResult('load', '⟳', 'Analysing…', 'Reviewing this transaction.', null);
+            button.disabled = true;
+            button.classList.add('is-loading');
+            label.textContent = 'Analysing…';
+
+            setTimeout(function () {
+
+                const shown = '₹' + amount.toLocaleString('en-IN');
+
+                if (amount >= 100000) {
+                    setResult('high', '!', 'High risk transaction',
+                        shown + ' has been flagged for additional verification.', 83);
+                } else if (amount >= 50000) {
+                    setResult('med', '!', 'Medium risk transaction',
+                        shown + ' may need additional monitoring.', 50);
+                } else {
+                    setResult('low', '✓', 'Low risk transaction',
+                        'No immediate risk indicator was detected for ' + shown + ' in this demo.', 17);
+                }
+
+                button.disabled = false;
+                button.classList.remove('is-loading');
+                label.textContent = 'Analyse transaction';
+
+            }, 800);
+        }
+
+    </script>
+
 </body>
+
 </html>
